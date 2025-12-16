@@ -1,5 +1,5 @@
+from rest_framework import serializers
 from apps.projects.models import Project
-from apps.users import serializers
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -13,3 +13,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         project.owner = self.context['request'].user
         project.save()
         return project
+
+
+
