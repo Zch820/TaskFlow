@@ -5,14 +5,14 @@ from apps.projects.permissions import IsOwnerOrReadOnly
 from apps.projects.serializers import ProjectSerializer
 
 
-class ProjectsListAPIView(generics.ListCreateAPIView):
+class ProjectsListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
     def get_queryset(self):
         return Project.objects.filter(owner=self.request.user)
 
 
-class ProjectsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class ProjectsDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = ProjectSerializer
     queryset = Project.objects.all().order_by('created_at')

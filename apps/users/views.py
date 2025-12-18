@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from apps.users.serializers import UserRegisterSerializer, UserLoginSerializer, UserProfileSerializer
 
 
-class UserRegister(APIView):
+class UserRegisterView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
@@ -15,7 +15,7 @@ class UserRegister(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserLogin(APIView):
+class UserLoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -25,7 +25,7 @@ class UserLogin(APIView):
 
 
 # only display user's profile
-class UserProfile(generics.RetrieveAPIView):
+class UserProfileView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
 
