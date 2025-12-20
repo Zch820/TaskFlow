@@ -18,4 +18,3 @@ class ProjectsDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all().order_by('created_at')
 
 
-

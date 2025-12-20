@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.models import User
 
@@ -8,8 +9,8 @@ class UserRegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -23,22 +24,27 @@ class UserRegisterSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password')
-        new_user = User.objects.create_user(**validated_data)
+        password = validated_data.pop('password')
+        new_user = User(**validated_data)
+        new_user.set_password(password)
+        new_user.save()
         return new_user
 
 
-class UserLoginSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = authenticate(email=data['email'], password=data['password'])
-        if not user:
-            raise serializers.ValidationError("Invalid credentials")
-        refresh = RefreshToken.for_user(user)
-        return {'user': user, 'access': str(refresh.access_token), 'refresh': str(refresh)}
+        email = data['email']
+        password = data['password']
+        user = get_object_or_404(User, email=email)
+        if user and user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+            return {'access': str(refresh.access_token), 'refresh': str(refresh)}
+        raise serializers.ValidationError("Invalid credentials")
+
+
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

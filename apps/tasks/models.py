@@ -20,3 +20,6 @@ class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_tasks')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
 
+    def __str__(self):
+        return f'{self.title} for project {self.project.id} till {self.due_date}'
+
