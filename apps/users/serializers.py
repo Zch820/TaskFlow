@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -43,8 +42,6 @@ class UserLoginSerializer(serializers.Serializer):
             refresh = RefreshToken.for_user(user)
             return {'access': str(refresh.access_token), 'refresh': str(refresh)}
         raise serializers.ValidationError("Invalid credentials")
-
-
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

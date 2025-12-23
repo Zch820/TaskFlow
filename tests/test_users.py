@@ -52,5 +52,3 @@ def test_registration_failure_missing_fields(api_client):
     assert response_missing_password.status_code == 400
 
 
-
-

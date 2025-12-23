@@ -2,7 +2,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.projects.models import Project
@@ -11,8 +10,6 @@ from apps.tasks.serializers import TaskSerializer
 
 
 class TasksListView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def get_object(self, request, project_id):
         project = get_object_or_404(Project, id=project_id)
         if project.owner != request.user:
@@ -37,7 +34,6 @@ class TasksListView(APIView):
         request=TaskSerializer,
         responses={
             201: TaskSerializer,
-            400: TaskSerializer,
             403: {"detail": "Permission denied"},
             404: {"detail": "Not found"},
         },
@@ -52,9 +48,15 @@ class TasksListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=["Tasks"])
+@extend_schema(
+    tags=["Tasks"],
+    responses={
+        200: TaskSerializer,
+        403: {"detail": "Permission denied"},
+        404: {"detail": "Not found"},
+    }
+)
 class TasksDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
 
     def get_object(self, *args, **kwargs):
@@ -64,8 +66,4 @@ class TasksDetailView(generics.RetrieveUpdateDestroyAPIView):
         if task.project.owner != self.request.user:
             raise PermissionDenied()
         return task
-
-
-
-
 
