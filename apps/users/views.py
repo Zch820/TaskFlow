@@ -1,10 +1,22 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.users.serializers import UserRegisterSerializer, UserLoginSerializer, UserProfileSerializer
 
-
+@extend_schema(
+    request=UserRegisterSerializer,
+    responses={
+        201: {
+            "type": "object",
+            "properties": {
+                "message": {"type": "string"},
+            },
+        },
+    },
+    tags=["User"],
+)
 class UserRegisterView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -15,6 +27,28 @@ class UserRegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(
+    tags=["User"],
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string"},
+                "password": {"type": "string"},
+            },
+            "required": ["email", "password"],
+        }
+    },
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "access": {"type": "string"},
+                "refresh": {"type": "string"},
+            }
+        }
+    },
+)
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -25,10 +59,11 @@ class UserLoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# only display user's profile
+
+@extend_schema(tags=["User"])
 class UserProfileView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
