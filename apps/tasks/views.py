@@ -1,51 +1,44 @@
+import logging
 from drf_spectacular.utils import extend_schema
-from rest_framework import status, generics
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from apps.projects.models import Project
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+
+from apps.tasks.services import get_task_under_project
+from apps.projects.services import get_owned_project
+
 from apps.tasks.models import Task
 from apps.tasks.serializers import TaskSerializer
 
+logger = logging.getLogger("task")
 
-class TasksListView(APIView):
-    def get_object(self, request, project_id):
-        project = get_object_or_404(Project, id=project_id)
-        if project.owner != request.user:
-            raise PermissionDenied()
-        return project
+@extend_schema(
+    tags=["Tasks"],
+    responses={
+        200: TaskSerializer(many=True),
+        403: {"detail": "Permission denied"},
+        404: {"detail": "Not found"},
+    }
+)
+class TasksListView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
 
-    @extend_schema(
-        responses={
-            200: TaskSerializer(many=True),
-            403: {"detail": "Permission denied"},
-            404: {"detail": "Not found"},
-        },
-        tags=["Tasks"],
-    )
-    def get(self, request, project_id):  # List tasks per project (only project owner)
-        project = self.get_object(request, project_id)
+    def get_project(self):
+        user = self.request.user
+        project_id = self.kwargs['project_id']
+        return get_owned_project(user, project_id)
+
+    def get_queryset(self):
+        project = self.get_project()
         tasks = Task.objects.filter(project=project)
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return tasks
 
-    @extend_schema(
-        request=TaskSerializer,
-        responses={
-            201: TaskSerializer,
-            403: {"detail": "Permission denied"},
-            404: {"detail": "Not found"},
-        },
-        tags=["Tasks"],
-    )
-    def post(self, request, project_id):  # Create task under a project (only project owner)
-        project = self.get_object(request, project_id)
-        serializer = TaskSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(project=project)  # get project only from URL
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        project = self.get_project()
+        task = serializer.save(project=project)
+        logger.info(
+            f"Create task | user_id={self.request.user.id} | task_id={task.id} | project_id={project.id}"
+        )
 
 
 @extend_schema(
@@ -57,13 +50,23 @@ class TasksListView(APIView):
     }
 )
 class TasksDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
 
-    def get_object(self, *args, **kwargs):
+    def get_object(self):
+        user = self.request.user
         project_id = self.kwargs['project_id']
         task_id = self.kwargs['task_id']
-        task = get_object_or_404(Task, id=task_id, project_id=project_id)
-        if task.project.owner != self.request.user:
-            raise PermissionDenied()
-        return task
+        return get_task_under_project(user, project_id, task_id)
 
+    def perform_update(self, serializer):
+        task = serializer.save()
+        logger.info(
+            f"Update task | user_id={self.request.user.id} | task_id={task.id} | project_id={task.project.id}"
+        )
+
+    def perform_destroy(self, instance):
+        logger.warning(
+            f"Delete task | user_id={self.request.user.id} | task_id={instance.id} | project_id={instance.project.id}"
+        )
+        instance.delete()

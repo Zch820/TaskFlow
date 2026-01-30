@@ -54,4 +54,3 @@ def test_delete_project(auth_user, user_projects):
 def test_delete_project_failure_permission(auth_user, user_projects, auth_user2):
     response = auth_user2.delete(reverse('project-detail', kwargs={'pk': user_projects[0].id}))
     assert response.status_code == 403
-

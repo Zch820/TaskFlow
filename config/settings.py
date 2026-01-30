@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -15,9 +16,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-dev-secret")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", " ").split(",")
 
 
 # Application definition
@@ -28,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.admin',
     # internal apps
     'apps.users',
     'apps.projects',
@@ -35,9 +37,11 @@ INSTALLED_APPS = [
     # external apps
     'rest_framework',
     'drf_spectacular',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -135,4 +139,49 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "auth_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "auth.log",
+        },
+    },
+    "loggers": {
+        "auth": {
+            "handlers": ["auth_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "project": {
+            "handlers": ["auth_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "task": {
+            "handlers": ["auth_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    }
 }

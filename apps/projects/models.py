@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.users.models import User
 
 
@@ -10,4 +11,3 @@ class Project(models.Model):
 
     def __str__(self):
         return f'{self.name} by {self.owner}'
-

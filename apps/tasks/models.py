@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.projects.models import Project
 from apps.users.models import User
 
@@ -22,4 +23,3 @@ class Task(models.Model):
 
     def __str__(self):
         return f'{self.title} for project {self.project.id} till {self.due_date}'
-

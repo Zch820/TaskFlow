@@ -1,9 +1,19 @@
+import logging
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.users.serializers import UserRegisterSerializer, UserLoginSerializer, UserProfileSerializer
+
+from apps.users.services import login_with_tokens, get_client_ip
+
+from apps.users.serializers import (
+    UserRegisterSerializer,
+    UserLoginSerializer,
+    UserProfileSerializer
+)
+
+logger = logging.getLogger("auth")
 
 @extend_schema(
     request=UserRegisterSerializer,
@@ -19,10 +29,14 @@ from apps.users.serializers import UserRegisterSerializer, UserLoginSerializer, 
 )
 class UserRegisterView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()
+            logger.info(
+                f"User registered | user_id={user.id} | ip={request.META.get('REMOTE_ADDR')}"
+            )
             return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -51,25 +65,25 @@ class UserRegisterView(APIView):
 )
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            data = {"access": serializer.validated_data["access"], "refresh": serializer.validated_data["refresh"]}
-            return Response(data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
 
+        ip = get_client_ip(request)
+        data = login_with_tokens(email, password, ip=ip)
+        logger.info(
+            f"User login | email={email} | ip={ip}"
+        )
+        return Response(data, status=status.HTTP_200_OK)
 
 
 @extend_schema(tags=["User"])
 class UserProfileView(generics.RetrieveAPIView):
-    serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
 
     def get_object(self):
         return self.request.user
-
-
-
-
-
-

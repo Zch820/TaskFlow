@@ -14,7 +14,7 @@ def api_client():
 
 @pytest.fixture
 def user():
-    return User.objects.create_user(username='user', email="user@user.com",password="20")
+    return User.objects.create_user(username='user', email="user@user.com",password="TaskFlow_2026")
 
 @pytest.fixture
 def auth_user(api_client, user):
@@ -25,7 +25,7 @@ def auth_user(api_client, user):
 # user 2
 @pytest.fixture
 def user2():
-    return User.objects.create_user(username='user2', email="user@two.com",password="20")
+    return User.objects.create_user(username='user2', email="user@two.com",password="TaskFlow_2026")
 
 @pytest.fixture
 def auth_user2(user2):
@@ -55,5 +55,3 @@ def user_tasks(user_projects):
 @pytest.fixture
 def user2_tasks(user2_projects):
     return baker.make(Task, _quantity=2, title='task', project=user2_projects[0])
-
-
