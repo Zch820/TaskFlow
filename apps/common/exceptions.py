@@ -2,6 +2,9 @@ from rest_framework.views import exception_handler
 
 
 def simple_error_handler(exc, context):
+    """
+    Customize DRF exception responses to {"error": "..."} format.
+    """
     response = exception_handler(exc, context)
 
     if response is not None:

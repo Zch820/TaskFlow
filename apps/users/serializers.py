@@ -14,7 +14,7 @@ class UserRegisterSerializer(serializers.Serializer):
 
     def validate_email(self, email):
         email = email.lower().strip()
-        if User.objects.filter(email=email).exists():
+        if User.active_objects.filter(email=email).exists():
             raise serializers.ValidationError("Email already registered")
         return email
 
@@ -47,3 +47,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'email')
+
+
+class TokenResponseSerializer(serializers.Serializer):
+    """
+    Only using for schemas.
+    """
+    access = serializers.CharField()
+    refresh = serializers.CharField()

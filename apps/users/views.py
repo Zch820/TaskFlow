@@ -1,12 +1,11 @@
 import logging
-from drf_spectacular.utils import extend_schema
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.schemas import register_user_schema, login_user_schema, display_profile_schema
 from apps.users.services import login_with_tokens, get_client_ip
-
 from apps.users.serializers import (
     UserRegisterSerializer,
     UserLoginSerializer,
@@ -15,22 +14,16 @@ from apps.users.serializers import (
 
 logger = logging.getLogger("auth")
 
-@extend_schema(
-    request=UserRegisterSerializer,
-    responses={
-        201: {
-            "type": "object",
-            "properties": {
-                "message": {"type": "string"},
-            },
-        },
-    },
-    tags=["User"],
-)
+
 class UserRegisterView(APIView):
     permission_classes = [AllowAny]
 
+    @register_user_schema()
     def post(self, request):
+        """
+        Resister a new user with email and password.
+        Return a success message.
+        """
         serializer = UserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -40,32 +33,15 @@ class UserRegisterView(APIView):
         return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(
-    tags=["User"],
-    request={
-        "application/json": {
-            "type": "object",
-            "properties": {
-                "email": {"type": "string"},
-                "password": {"type": "string"},
-            },
-            "required": ["email", "password"],
-        }
-    },
-    responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "access": {"type": "string"},
-                "refresh": {"type": "string"},
-            }
-        }
-    },
-)
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
 
+    @login_user_schema()
     def post(self, request):
+        """
+        Authenticate user with email and password.
+        Return access & refresh tokens via login_with_tokens()
+        """
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
@@ -79,10 +55,16 @@ class UserLoginView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-@extend_schema(tags=["User"])
 class UserProfileView(generics.RetrieveAPIView):
+    """
+    Display user profile details.
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
+
+    @display_profile_schema()
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     def get_object(self):
         return self.request.user

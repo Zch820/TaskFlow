@@ -16,9 +16,11 @@ class TaskSerializer(serializers.ModelSerializer):
             'priority',
             'due_date',
             'project',
-            'assigned_to'
+            'assigned_to',
+            'created_at',
+            'updated_at',
         )
-        read_only_fields = ('id', 'project')
+        read_only_fields = ('id', 'project', 'created_at', 'updated_at')
 
     def validate_due_date(self, value):
         if value < timezone.now().date():

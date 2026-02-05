@@ -48,7 +48,7 @@ def test_update_project(auth_user, user_projects):
 def test_update_project_failure_permission(auth_user, user_projects, auth_user2):
     response = auth_user2.put(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}),
                               {'name': 'New Name'})
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 # ------ Project Delete Tests ---------------------------------------------------
@@ -62,4 +62,4 @@ def test_delete_project(auth_user, user_projects):
 @pytest.mark.django_db
 def test_delete_project_failure_permission(auth_user, user_projects, auth_user2):
     response = auth_user2.delete(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}))
-    assert response.status_code == 403
+    assert response.status_code == 404

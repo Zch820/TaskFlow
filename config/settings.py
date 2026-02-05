@@ -31,9 +31,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.admin',
     # internal apps
-    'apps.users',
-    'apps.projects',
-    'apps.tasks',
+    'apps.users.apps.UsersConfig',
+    'apps.projects.apps.ProjectsConfig',
+    'apps.tasks.apps.TasksConfig',
     # external apps
     'rest_framework',
     'drf_spectacular',
@@ -140,21 +140,26 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "apps.common.exceptions.simple_error_handler",
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 5,
+
+    # throttling
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.AnonRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": { "user": "1000/day", "anon": "100/day"},
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+CORS_ALLOWED_ORIGINS = [ "http://localhost:3000", "http://127.0.0.1:3000"]
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False # True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
@@ -187,3 +192,5 @@ LOGGING = {
         },
     }
 }
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

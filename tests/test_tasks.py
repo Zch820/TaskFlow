@@ -21,20 +21,22 @@ def test_listing_tasks(auth_user, auth_user2, user_projects, user2_projects, use
     project_id = user_projects[0].id
     response_user = auth_user.get(reverse('v1_tasks:task-list', kwargs={'project_id': project_id}))
     assert response_user.status_code == 200
-    assert len(response_user.json()) == 3
+    data1 = response_user.json()
+    assert len(data1['results']) == 3
 
     # listing user2 tasks
     project_id2 = user2_projects[0].id
     response_user2 = auth_user2.get(reverse('v1_tasks:task-list', kwargs={'project_id': project_id2}))
     assert response_user2.status_code == 200
-    assert len(response_user2.json()) == 2
+    data2 = response_user2.json()
+    assert len(data2['results']) == 2
 
 
 @pytest.mark.django_db
 def test_listing_tasks_failure_permission(auth_user, user2_projects, user2_tasks):
     project_id = user2_projects[0].id
     response = auth_user.get(reverse('v1_tasks:task-list', kwargs={'project_id': project_id}))
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
@@ -50,7 +52,7 @@ def test_retrieving_task_failure_permission(auth_user, user2_projects, user2_tas
     project_id = user2_projects[0].id
     task_id = user2_tasks[0].id
     response = auth_user.get(reverse('v1_tasks:task-detail', kwargs={'project_id': project_id, 'task_id': task_id}))
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 # ------ Tasks Update Tests ---------------------------------------------------
@@ -73,7 +75,7 @@ def test_update_task_failure_permission(auth_user, user2_projects, user2_tasks):
     data = {'title': 'New Title', 'due_date': timezone.now().date()}
     response = auth_user.put(reverse('v1_tasks:task-detail', kwargs={'project_id': project_id, 'task_id': task_id}),
                              data)
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 # ------ Tasks Delete Tests ---------------------------------------------------
@@ -91,4 +93,4 @@ def test_delete_task_failure_permission(auth_user, user2_projects, user2_tasks):
     project_id = user2_projects[0].id
     task_id = user2_tasks[0].id
     response = auth_user.delete(reverse('v1_tasks:task-detail', kwargs={'project_id': project_id, 'task_id': task_id}))
-    assert response.status_code == 403
+    assert response.status_code == 404

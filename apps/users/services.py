@@ -12,7 +12,11 @@ def get_client_ip(request):
 
 
 def login_with_tokens(email, password, ip):
-    user = User.objects.filter(email=email).first()
+    """
+    Login the user with email and password or AuthenticationFailed(),
+    Return access token and refresh token.
+    """
+    user = User.active_objects.filter(email=email).first()
 
     if not user or not user.check_password(password):
         logger.warning(

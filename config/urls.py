@@ -6,9 +6,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Versioned APIs
-    path('api/v1/', include(('apps.users.urls', 'users'), namespace='v1_users')),
-    path('api/v1/', include(('apps.projects.urls', 'projects'), namespace='v1_projects')),
-    path('api/v1/', include(('apps.tasks.urls', 'tasks'), namespace='v1_tasks')),
+    path('api/v1/users', include(('apps.users.urls', 'users'), namespace='v1_users')),
+    path('api/v1/projects', include(('apps.projects.urls', 'projects'), namespace='v1_projects')),
+    path('api/v1/tasks', include(('apps.tasks.urls', 'tasks'), namespace='v1_tasks')),
 
     # API schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
