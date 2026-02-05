@@ -34,9 +34,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class ProjectListSerializer(serializers.Serializer):
-    """
-    Only using for schemas.
-    """
     id = serializers.IntegerField()
     name = serializers.CharField()
     created_at = serializers.DateTimeField()

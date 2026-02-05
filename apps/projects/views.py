@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from apps.projects.models import Project
 from apps.projects.permissions import IsOwnerOrReadOnly
-from apps.projects.serializers import ProjectSerializer
+from apps.projects.serializers import ProjectSerializer, ProjectListSerializer
 from apps.projects.services import get_project_page_data
 from apps.projects.schemas import (
     project_retrieve_schema,
@@ -20,10 +20,14 @@ logger = logging.getLogger("project")
 
 class ProjectsListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ProjectSerializer
 
     def get_queryset(self):
         return Project.active_objects.filter(owner=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ProjectListSerializer
+        return ProjectSerializer
 
     @project_list_schema()
     def list(self, request, *args, **kwargs):
@@ -35,7 +39,7 @@ class ProjectsListView(generics.ListCreateAPIView):
         projects = Project.active_objects.filter(owner=self.request.user)
         page_number = int(request.query_params.get("page", 1))
         projects_list = get_project_page_data(projects=projects, user_id=self.request.user.id, page=page_number)
-        serializer = ProjectSerializer(projects_list, many=True)
+        serializer = self.get_serializer(projects_list, many=True)
         return Response(serializer.data)
 
     @project_create_schema()

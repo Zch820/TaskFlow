@@ -6,11 +6,10 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 
 def cache_project_page(projects, user_id, page, start, end):
     """
-    Cash projects values and return them in a list form.
+    Cache projects values and return them in a list form.
     ( values : id, name, created_at )
     """
-    projects = projects.values("id", "name", "created_at")[start:end]
-    project_list = [{"id": p["id"], "name": p["name"], "created_at": p["created_at"].isoformat()} for p in projects]
+    project_list = [{'id':p.id, 'name':p.name, 'created_at':p.created_at.isoformat()} for p in projects[start:end]]
     r.setex(f"user:{user_id}:projects:{page}", 60*30, json.dumps(project_list))
     return project_list
 

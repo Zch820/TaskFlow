@@ -17,8 +17,7 @@ def get_project_page_data(projects, user_id, page):
     if page <= 5:
         return get_or_cache_project_page(projects, user_id, page, start, end)
 
-    projects = projects.values("id", "name", "created_at")[start:end]
-    return [{"id": p["id"], "name": p["name"], "created_at": p["created_at"].isoformat()} for p in projects]
+    return [{'id':p.id, 'name':p.name, 'created_at':p.created_at.isoformat()} for p in projects[start:end]]
 
 
 def get_own_project(user, project_id):
