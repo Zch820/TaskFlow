@@ -8,8 +8,8 @@ from apps.users.serializers import (
 )
 
 
-def register_user_schema():
-    return extend_schema(
+register_user_schema = (
+    extend_schema(
         tags=["Auth"],
         summary="Register user",
         description="Register a new user with email and password.",
@@ -19,9 +19,10 @@ def register_user_schema():
             400: OpenApiResponse(description="Bad request"),
         },
     )
+)
 
-def login_user_schema():
-    return extend_schema(
+login_user_schema = (
+    extend_schema(
         tags=["Auth"],
         summary="Login user",
         description="Login user with email and password.",
@@ -31,9 +32,10 @@ def login_user_schema():
             400: OpenApiResponse(description="Invalid credentials"),
         }
     )
+)
 
-def display_profile_schema():
-    return extend_schema(
+display_profile_schema = (
+    extend_schema(
         tags=["User"],
         summary="User profile",
         description="Display user profile information.",
@@ -44,3 +46,4 @@ def display_profile_schema():
             404: OpenApiResponse(description="Not found"),
         }
     )
+)

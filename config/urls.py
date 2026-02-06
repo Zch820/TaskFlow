@@ -6,11 +6,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Versioned APIs
-    path('api/v1/users', include(('apps.users.urls', 'users'), namespace='v1_users')),
-    path('api/v1/projects', include(('apps.projects.urls', 'projects'), namespace='v1_projects')),
-    path('api/v1/tasks', include(('apps.tasks.urls', 'tasks'), namespace='v1_tasks')),
+    path('api/<str:version>/users/', include('apps.users.urls')),
+    path('api/<str:version>/projects/', include('apps.projects.urls')),
+    path('api/<str:version>/tasks/', include('apps.tasks.urls')),
 
     # API schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/schema/swagger-ui/",SpectacularSwaggerView.as_view(url_name="schema"),name="swagger-ui",),
+    path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 ]

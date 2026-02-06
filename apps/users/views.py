@@ -1,4 +1,5 @@
 import logging
+from drf_spectacular.utils import extend_schema_view
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -15,11 +16,13 @@ from apps.users.serializers import (
 logger = logging.getLogger("auth")
 
 
+@extend_schema_view(
+    post=register_user_schema,
+)
 class UserRegisterView(APIView):
     permission_classes = [AllowAny]
 
-    @register_user_schema()
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """
         Resister a new user with email and password.
         Return a success message.
@@ -33,11 +36,13 @@ class UserRegisterView(APIView):
         return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
 
 
+@extend_schema_view(
+    post=login_user_schema,
+)
 class UserLoginView(APIView):
     permission_classes = [AllowAny]
 
-    @login_user_schema()
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """
         Authenticate user with email and password.
         Return access & refresh tokens via login_with_tokens()
@@ -55,6 +60,9 @@ class UserLoginView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
+@extend_schema_view(
+    get=display_profile_schema,
+)
 class UserProfileView(generics.RetrieveAPIView):
     """
     Display user profile details.
@@ -62,7 +70,6 @@ class UserProfileView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
 
-    @display_profile_schema()
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 

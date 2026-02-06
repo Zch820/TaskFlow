@@ -1,4 +1,5 @@
 import logging
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
@@ -17,6 +18,10 @@ from apps.tasks.services import get_task_under_project
 logger = logging.getLogger("task")
 
 
+@extend_schema_view(
+    get=task_list_schema,
+    post=task_create_schema,
+)
 class TasksListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
@@ -39,14 +44,6 @@ class TasksListView(generics.ListCreateAPIView):
         tasks = Task.active_objects.filter(project=project).select_related('assigned_to')
         return tasks
 
-    @task_list_schema()
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @task_create_schema()
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
     def perform_create(self, serializer):
         """
         Getting a project instant from get_project(),
@@ -59,6 +56,12 @@ class TasksListView(generics.ListCreateAPIView):
         )
 
 
+@extend_schema_view(
+    get=task_retrieve_schema,
+    put=task_update_schema,
+    delete=task_delete_schema,
+    patch=extend_schema(exclude=True)
+)
 class TasksDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
@@ -72,18 +75,6 @@ class TasksDetailView(generics.RetrieveUpdateDestroyAPIView):
         project_id = self.kwargs['project_id']
         task_id = self.kwargs['task_id']
         return get_task_under_project(user=user, project_id=project_id, task_id=task_id)
-
-    @task_retrieve_schema()
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @task_update_schema()
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
-
-    @task_delete_schema()
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         task = serializer.save()

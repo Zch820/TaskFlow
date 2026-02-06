@@ -1,4 +1,5 @@
 import logging
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,6 +19,10 @@ from apps.projects.schemas import (
 logger = logging.getLogger("project")
 
 
+@extend_schema_view(
+    get=project_list_schema,
+    post=project_create_schema,
+)
 class ProjectsListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -29,7 +34,6 @@ class ProjectsListView(generics.ListCreateAPIView):
             return ProjectListSerializer
         return ProjectSerializer
 
-    @project_list_schema()
     def list(self, request, *args, **kwargs):
         """
         Call get_project_page_data() for pagination and formatting.
@@ -42,10 +46,6 @@ class ProjectsListView(generics.ListCreateAPIView):
         serializer = self.get_serializer(projects_list, many=True)
         return Response(serializer.data)
 
-    @project_create_schema()
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
     def perform_create(self, serializer):
         project = serializer.save()
         logger.info(
@@ -53,24 +53,18 @@ class ProjectsListView(generics.ListCreateAPIView):
         )
 
 
+@extend_schema_view(
+    get=project_retrieve_schema,
+    put=project_update_schema,
+    delete=project_delete_schema,
+    patch=extend_schema(exclude=True)
+)
 class ProjectsDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = ProjectSerializer
 
     def get_queryset(self):
         return Project.owned_projects.owned_by(self.request.user)
-
-    @project_retrieve_schema()
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @project_update_schema()
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
-
-    @project_delete_schema()
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         project = serializer.save()
@@ -83,3 +77,4 @@ class ProjectsDetailView(generics.RetrieveUpdateDestroyAPIView):
             f"Delete project | user_id={self.request.user.id} | project_id={instance.id}"
         )
         instance.delete()
+

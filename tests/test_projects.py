@@ -6,7 +6,7 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 def test_create_project(auth_user):
-    response = auth_user.post(reverse('v1_projects:project-list'), {'name': 'My Project'})
+    response = auth_user.post(reverse('project-list', kwargs={'version': '1'}), {'name': 'My Project'})
     assert response.status_code == 201
 
 
@@ -15,19 +15,19 @@ def test_create_project(auth_user):
 @pytest.mark.django_db
 def test_listing_projects(auth_user, user_projects, user2_projects, auth_user2):
     # listing user projects
-    response_user = auth_user.get(reverse('v1_projects:project-list'))
+    response_user = auth_user.get(reverse('project-list', kwargs={'version': '1'}))
     assert response_user.status_code == 200
     assert len(response_user.json()) == 3
 
     # listing user2 projects
-    response_user2 = auth_user2.get(reverse('v1_projects:project-list'))
+    response_user2 = auth_user2.get(reverse('project-list', kwargs={'version': '1'}))
     assert response_user2.status_code == 200
     assert len(response_user2.json()) == 2
 
 
 @pytest.mark.django_db
 def test_retrieve_project(auth_user, user_projects):
-    response = auth_user.get(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}))
+    response = auth_user.get(reverse('project-detail', kwargs={'pk': user_projects[0].id, 'version': '1'}))
     assert response.status_code == 200
     assert 'id' in response.json()
     assert 'name' in response.json()
@@ -38,7 +38,7 @@ def test_retrieve_project(auth_user, user_projects):
 
 @pytest.mark.django_db
 def test_update_project(auth_user, user_projects):
-    response = auth_user.put(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}),
+    response = auth_user.put(reverse('project-detail', kwargs={'pk': user_projects[0].id, 'version': '1'}),
                              {'name': 'New Name'})
     assert response.status_code == 200
     assert response.json()['name'] == 'New Name'
@@ -46,7 +46,7 @@ def test_update_project(auth_user, user_projects):
 
 @pytest.mark.django_db
 def test_update_project_failure_permission(auth_user, user_projects, auth_user2):
-    response = auth_user2.put(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}),
+    response = auth_user2.put(reverse('project-detail', kwargs={'pk': user_projects[0].id, 'version': '1'}),
                               {'name': 'New Name'})
     assert response.status_code == 404
 
@@ -55,11 +55,11 @@ def test_update_project_failure_permission(auth_user, user_projects, auth_user2)
 
 @pytest.mark.django_db
 def test_delete_project(auth_user, user_projects):
-    response = auth_user.delete(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}))
+    response = auth_user.delete(reverse('project-detail', kwargs={'pk': user_projects[0].id, 'version': '1'}))
     assert response.status_code == 204
 
 
 @pytest.mark.django_db
 def test_delete_project_failure_permission(auth_user, user_projects, auth_user2):
-    response = auth_user2.delete(reverse('v1_projects:project-detail', kwargs={'pk': user_projects[0].id}))
+    response = auth_user2.delete(reverse('project-detail', kwargs={'pk': user_projects[0].id, 'version': '1'}))
     assert response.status_code == 404

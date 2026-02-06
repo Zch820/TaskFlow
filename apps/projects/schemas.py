@@ -3,10 +3,10 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from apps.projects.serializers import ProjectSerializer, ProjectListSerializer
 
 
-def project_list_schema():
-    return extend_schema(
+project_list_schema = (
+    extend_schema(
         tags=["Projects"],
-        summary="List project",
+        summary="List projects",
         description="List all projects for the authenticated user",
         responses={
             200: OpenApiResponse(
@@ -16,9 +16,10 @@ def project_list_schema():
             401: OpenApiResponse(description="Unauthorized"),
         },
     )
+)
 
-def project_create_schema():
-    return extend_schema(
+project_create_schema = (
+    extend_schema(
         tags=["Projects"],
         summary="Create project",
         description="Create a new project for the authenticated user",
@@ -29,9 +30,10 @@ def project_create_schema():
             401: OpenApiResponse(description="Unauthorized"),
         },
     )
+)
 
-def project_retrieve_schema():
-    return extend_schema(
+project_retrieve_schema = (
+    extend_schema(
         tags=["Projects"],
         summary="Retrieve project",
         description="Retrieving a project by ID",
@@ -41,9 +43,10 @@ def project_retrieve_schema():
             404: OpenApiResponse(description="Not found"),
         },
     )
+)
 
-def project_update_schema():
-    return extend_schema(
+project_update_schema = (
+    extend_schema(
         tags=["Projects"],
         summary="Update project",
         description="Update a project by ID",
@@ -55,9 +58,10 @@ def project_update_schema():
             404: OpenApiResponse(description="Not found"),
         },
     )
+)
 
-def project_delete_schema():
-    return extend_schema(
+project_delete_schema = (
+    extend_schema(
         tags=["Projects"],
         summary="Delete project",
         description="Soft-Delete a project by ID",
@@ -67,3 +71,4 @@ def project_delete_schema():
             404: OpenApiResponse(description="Project not found"),
         },
     )
+)

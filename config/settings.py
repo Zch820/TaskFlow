@@ -30,14 +30,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    # internal apps
-    'apps.users.apps.UsersConfig',
-    'apps.projects.apps.ProjectsConfig',
-    'apps.tasks.apps.TasksConfig',
     # external apps
     'rest_framework',
     'drf_spectacular',
     'corsheaders',
+    # internal apps
+    'apps.users.apps.UsersConfig',
+    'apps.projects.apps.ProjectsConfig',
+    'apps.tasks.apps.TasksConfig',
 ]
 
 MIDDLEWARE = [
@@ -127,7 +127,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Task Flow",
     "DESCRIPTION": "REST API for managing projects and tasks",
     "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
+    # "SERVE_INCLUDE_SCHEMA": True,
     "SECURITY": [{"bearerAuth": []},],
 }
 
@@ -140,7 +140,6 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "apps.common.exceptions.simple_error_handler",
-    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 5,
 
     # throttling
@@ -149,6 +148,11 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": { "user": "1000/day", "anon": "100/day"},
+
+    # versioning
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'DEFAULT_VERSION': '1',
+    'ALLOWED_VERSIONS': ['1', '2'],
 }
 
 CORS_ALLOWED_ORIGINS = [ "http://localhost:3000", "http://127.0.0.1:3000"]
